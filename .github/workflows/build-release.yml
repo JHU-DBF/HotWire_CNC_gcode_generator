@@ -23,7 +23,7 @@ jobs:
     - name: Build Windows executable
       run: |
         cd gui_app
-        pyinstaller --onefile --windowed --name HotWireCNC hotwire_gcode_app.py
+        pyinstaller HotWireCNC.spec
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
       with:
@@ -46,7 +46,7 @@ jobs:
     - name: Build macOS executable
       run: |
         cd gui_app
-        pyinstaller --onefile --windowed --name HotWireCNC hotwire_gcode_app.py
+        pyinstaller HotWireCNC.spec
     - name: Upload macOS artifact
       uses: actions/upload-artifact@v4
       with:
@@ -73,7 +73,7 @@ jobs:
     - name: Build Linux executable
       run: |
         cd gui_app
-        pyinstaller --onefile --windowed --name HotWireCNC hotwire_gcode_app.py
+        pyinstaller HotWireCNC.spec
     - name: Upload Linux artifact
       uses: actions/upload-artifact@v4
       with:
