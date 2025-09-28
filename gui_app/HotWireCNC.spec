@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['hotwire_gcode_app.py'],
+    ['main.py'],
     pathex=[],
     binaries=[],
     datas=[],
