@@ -1,298 +1,185 @@
-# HotWire CNC G-code Generator
+# Hot Wire CNC G-code Generator GUI
 
-This repository contains a Python-based toolset for generating G-code for 4-axis hot wire CNC machines. It provides functionality to import DXF and STEP files, visualize entities, optimize cutting paths, and generate G-code for hotwire foam cutting for both 2D profiles and 3D shapes.
+A comprehensive PySide6-based GUI application for converting DXF files to optimized G-code for hot wire CNC foam cutting machines.
 
 ## Features
 
-### General Features
-- **Entity Visualization**: Interactive plotting of entities with color coding and ID labels
-- **Toolpath Animation**: Animated visualization of the cutting process before G-code generation
-- **G-code Generation**: Output standard G-code compatible with most hot wire CNC controllers
+### Core Functionality
+- **DXF File Loading**: Automatically detects DXF units ($INSUNITS) and converts to millimeters
+- **Interactive Entity Selection**: Click on entities in the visualization to add them to cutting sequence
+- **Drag & Drop Ordering**: Reorder cutting sequence by dragging items in the list widget
+- **Multi-Selection Support**: Use Shift+Click or Ctrl+Click to select/deselect multiple entities
+- **Real-time Path Visualization**: Preview complete tool path with numbered entities
 
-### 2D Profile Cutting (hotwire_gcode.ipynb)
-- **DXF File Import**: Load and parse standard DXF files to extract entities (lines, arcs, circles, polylines, splines)
-- **Manual Path Ordering**: Define custom cutting order for complex profiles
-- **Path Optimization**: Automatically optimize cutting paths to minimize movement
+### Advanced Cutting Path Control
+- **First Path Direction**: Choose between "Left to Right →" or "← Right to Left" for initial cutting direction
+- **Entity Customization**: Double-click entities to customize point count for curves (arcs, circles, splines)
+- **Automatic Point Calculation**: Default points calculated based on max segment length for optimal quality
+- **4-Axis G-code Generation**: Optimized for hot wire CNC with wire heating control
 
-### 3D Shape Cutting (hotwire_gcode_3d.ipynb)
-- **STEP File Import**: Load 3D models from STEP files and extract cutting profiles
-- **Face Selection**: Visually select faces for creating cutting paths
-- **Synchronized Dual-Gantry Paths**: Generate coordinated movement for both sides of the hot wire
-- **Entry/Exit Path System**: Configure horizontal lead-in and lead-out paths to ensure clean foam cutting
+### Interactive Animation System
+- **Constant Speed Animation**: Tool moves at realistic speed based on animation speed setting
+- **Looping Animation**: Automatically restarts when complete for continuous preview
+- **Pause/Resume Control**: Pause and resume animation at any point
+- **Static G-Code Points Overlay**: Toggle to show/hide actual G-code points on animation canvas
+- **Zoom & Pan Controls**: Interactive zoom and pan for both selection and animation views
 
-## Visualizations
+### Advanced Visualization
+- **Dual Canvas System**: Separate canvases for entity selection and path animation
+- **Mouse Pan & Zoom**: Natural pan (drag) and zoom (scroll) with gesture filtering
+- **Entity Highlighting**: Selected entities are highlighted in red with center markers
+- **Grid Display**: Configurable grid for precise entity selection
+- **Aspect Ratio Control**: Equal aspect ratio maintained for accurate geometry representation
 
-### 2D Profile Cutting
-![2D Toolpath Animation](toolpath_2d.gif)
+### Parameter Control
+- **Scale Factor**: Resize entire geometry with automatic unit conversion
+- **X/Y Offset**: Translate cutting origin for precise positioning
+- **Max Segment Length**: Controls curve discretization quality (affects point density)
+- **Animation Speed**: Separate speed control for visualization (mm/s)
+- **Feed Rate**: Cutting speed in G-code output (mm/min)
+- **Wire Current**: Configurable wire heating current for G-code
 
-### 3D Dual-Gantry Cutting (2D View)
-![Dual Gantry Animation 2D](dual_gantry_animation_2d.gif)
-
-### 3D Dual-Gantry Cutting (3D View)
-![Dual Gantry Animation 3D](dual_gantry_animation_3d.gif)
-
-### 3D Cutting Paths Visualization
-![Dual Gantry Cutting Paths](dual_gantry_cutting_paths_3d.png)
-
-## Requirements
-
-- Python 3.6+
-- Required packages:
-  - ezdxf (for DXF handling)
-  - numpy
-  - matplotlib
-  - scipy (for advanced spline handling)
-  - IPython (for notebook interface)
-  - cadquery (for 3D model import, required for 3D functionality)
+### User Experience Features
+- **Context-Sensitive Controls**: Buttons and options adapt based on current state
+- **Real-time Updates**: Path regenerates automatically when parameters change
+- **Error Handling**: Graceful handling of invalid inputs and file errors
+- **Progress Feedback**: Visual feedback during file loading and processing
+- **Compact Layout**: Efficient use of screen space with collapsible sections
 
 ## Installation
 
-```
-# Clone the repository
-git clone https://github.com/yourusername/hotwire-gcode-generator.git
-cd hotwire-gcode-generator
-```
+### Prerequisites
+- Python 3.8 or higher
+- PySide6-compatible system (Windows, macOS, Linux)
 
-# Install dependencies for 2D functionality
-```
-pip install ezdxf numpy matplotlib scipy ipython
-```
+### Pre-built Executables
 
-# For 3D functionality, also install:
-```
-pip install cadquery
-```
+For users who prefer not to set up a Python environment, pre-built executables are available for Windows, macOS, and Linux. These standalone applications include all dependencies and can be run immediately without installation.
 
-## Usage
+**Download the latest release** from the [GitHub Releases](https://github.com/JHU-DBF/HotWire_CNC_gcode_generator/releases) page.
 
-### 2D Profile Cutting Workflow
+### Setup (Development)
 
-Use the `hotwire_gcode.ipynb` notebook for cutting 2D profiles where both sides of the wire follow the same path.
+1. Create a virtual environment (recommended):
 
-#### Input Files
-- DXF files containing lines, arcs, circles, polylines, or splines
-
-#### Basic Workflow
-
-1. **Import DXF file**
-   ```
-   entities = read_cad_file("your_design.dxf")
+   ```bash
+   python -m venv hotwire_env
+   source hotwire_env/bin/activate  # On Windows: hotwire_env\Scripts\activate
    ```
 
-2. **Visualize the entities**
-   ```
-   plot_entities(entities)
-   ```
+2. Install dependencies:
 
-3. **Define cutting order manually** (using entity indices displayed in the visualization)
-   ```
-   order = [13, 9, 10, 7, 8, 1, 2, 3, 4, 12]  # Entity indices
-   points = manual_order_path(entities, order)
+   ```bash
+   pip install -r requirements.txt
    ```
 
-4. **Scale and adjust as needed**
-   ```
-   points = np.array(points)
-   points = points * 25.4  # Convert from inches to mm
-   points[:, 0] -= points[:, 0].min()  # Shift to start at x=0
-   ```
+3. Run the application:
 
-5. **Visualize the cutting path**
-   ```
-   plt.scatter(*zip(*points), c=np.linspace(0, 1, len(points)), cmap="viridis", s=0.5)
-   plt.colorbar(label="Path order")
-   plt.gca().set_aspect("equal", adjustable="box")
-   plt.show()
+   ```bash
+   python hotwire_gcode_app.py
    ```
 
-6. **Animate the toolpath**
-   ```
-   ani = animate_tool_path(points, tool_speed=0.5, tool_size=0.025, fps=30)
-   from IPython.display import HTML
-   HTML(ani.to_jshtml())
-   ```
+## Usage Guide
 
-7. **Generate G-code**
-   ```
-   gcode = generate_gcode(points, feed_rate=200.0, wire_current=1000)
-   write_gcode_file(gcode, "output.ngc")
-   ```
+### Basic Workflow
+1. **Load DXF File**: Click "Load DXF File" to import your CAD drawing
+2. **Select Entities**: Click on numbered entities in the selection plot to add them to cutting sequence
+3. **Customize Direction**: Choose first path direction (Left to Right or Right to Left)
+4. **Adjust Parameters**: Set scale, offsets, segment length, and other parameters
+5. **Preview Animation**: Click "Animate" to visualize the cutting sequence
+6. **Fine-tune**: Use "Show G-Code Points" to overlay actual cutting points
+7. **Generate G-code**: Click "Generate and Save G-Code" to export the final file
 
-### 3D Shape Cutting Workflow
+### Advanced Features
 
-Use the `hotwire_gcode_3d.ipynb` notebook for cutting 3D shapes where each end of the wire follows different paths.
+#### Entity Customization
+- Double-click any entity in the cutting sequence list
+- For curves (arcs, circles, splines): Adjust the number of points
+- Default values are calculated based on max segment length for optimal quality
+- LINE entities cannot be customized (they only have 2 points)
 
-#### Input Files
-- STEP files containing 3D geometry (wings, airfoils, etc.)
+#### Multi-Selection
+- **Shift+Click**: Select range of entities
+- **Ctrl+Click**: Toggle individual entity selection
+- **Remove Selected**: Remove all selected entities at once
 
-#### Basic Workflow
+#### Animation Controls
+- **Zoom In/Out/Fit**: Control animation view independently
+- **Show G-Code Points**: Toggle actual cutting points overlay
+- **Pause/Resume**: Control animation playback
+- **Animation Speed**: Adjust visualization speed (separate from cutting speed)
 
-1. **Import STEP file**
-   ```
-   faces, face_centers = load_step_file("your_model.step")
-   ```
+#### Interactive Navigation
+- **Pan**: Click and drag to move the view
+- **Zoom**: Mouse wheel to zoom in/out
+- **Selection Protection**: Pan/zoom gestures don't interfere with entity selection
 
-2. **Visualize faces with ID numbers**
-   ```
-   visualize_faces(faces, face_centers)
-   ```
+## Parameters Reference
 
-3. **Select faces for cutting** (using face IDs from visualization)
-   ```
-   selected_faces = [7, 8, 12, 13]  # Face indices
-   ```
+| Parameter | Description | Units | Default |
+|-----------|-------------|-------|---------|
+| Scale Factor | Resize entire geometry | - | 1.0 |
+| X/Y Offset | Translate cutting origin | mm | 0.0 |
+| Max Segment Length | Curve discretization quality | mm | 0.05 |
+| Animation Speed | Visualization speed | mm/s | 50.0 |
+| Feed Rate | Cutting speed in G-code | mm/min | 120 |
+| Wire Current | Heating current | A | 1000 |
 
-4. **Extract entities from the selected faces**
-   ```
-   left_entities = extract_face_edges(faces[selected_faces[0]])
-   right_entities = extract_face_edges(faces[selected_faces[1]])
-   ```
+## Supported DXF Entities
 
-5. **Visualize the extracted entities**
-   ```
-   visualize_entities_3d([left_entities, right_entities])
-   ```
+- **Lines**: Straight cuts with exact endpoints
+- **Arcs**: Curved cuts with configurable point density
+- **Circles**: Full circular cuts with adaptive segmentation
+- **Polylines**: Complex multi-segment paths (LW and regular)
+- **Splines**: Smooth curves with B-spline reconstruction
 
-6. **Configure left and right cutting paths** with entry and exit paths
-   ```
-   # Configure entry/exit points
-   entry_exit_config = {
-       101: {
-           "type": "entry",
-           "distance": [50, 0],  # [X, Z] distance in mm
-       },
-       102: {
-           "type": "exit",
-           "distance": [50, 0],  # [X, Z] distance in mm
-       }
-   }
-   
-   # Define the cutting path using entity indices
-   left_plane_entities = [101, 11, 10, 9, 102]  # Start with entry, end with exit
-   right_plane_entities = [101, 6, 7, 8, 102]   # Same virtual IDs on both sides
-   ```
+## G-code Output Specifications
 
-7. **Generate cutting paths**
-   ```
-   cutting_paths = generate_cutting_paths_from_entities(
-       left_plane_entities, 
-       right_plane_entities, 
-       entities,
-       entry_exit_config=entry_exit_config
-   )
-   ```
+The generated G-code is optimized for 4-axis hot wire CNC machines:
+- **Coordinate System**: X, Y for position, A/B for wire angles
+- **Wire Control**: Automatic heating on/off commands
+- **Path Optimization**: Minimizes non-cutting travel
+- **Precision**: High-resolution point output based on segment length
+- **Safety**: Includes proper G-code headers and comments
 
-8. **Visualize the cutting paths**
-   ```
-   visualize_cutting_paths(cutting_paths, left_entities, right_entities, gantry_gap=GANTRY_GAP)
-   ```
+## Troubleshooting
 
-9. **Create animation**
-   ```
-   animation = create_dual_gantry_animation(cutting_paths, save_gif=True)
-   display(animation)
-   ```
+### Common Issues
+- **Import Errors**: Ensure all dependencies are installed (`pip install -r requirements.txt`)
+- **No Entities Visible**: Check DXF file contains supported entity types
+- **Click Detection Issues**: Click closer to numbered entity labels
+- **Animation Performance**: Reduce max segment length for complex geometries
+- **Memory Issues**: Large DXF files may require more RAM
 
-10. **Generate G-code**
-   ```
-   gcode = generate_dual_gantry_gcode(cutting_paths, feed_rate=200.0, wire_current=1000)
-   write_gcode_file(gcode, "output_3d.ngc")
-   ```
+### File Format Notes
+- Automatically detects DXF units via $INSUNITS header
+- Supports DXF versions R12 through R2018
+- Binary DXF files are supported
+- Large files (>100MB) may require significant processing time
 
-## Entry and Exit Path System
+## Technical Architecture
 
-The 3D cutting module includes a configurable entry and exit path system that ensures the hot wire enters and exits the foam horizontally at the same rate on both sides. This is essential for clean cuts without snagging or deforming the foam.
+### Core Components
+- **MatplotlibCanvas**: Custom canvas class with pan/zoom and gesture handling
+- **HotWireGCodeApp**: Main application window with PySide6 UI
+- **Entity Processing**: DXF parsing and geometry conversion
+- **Path Generation**: Optimized cutting path creation with direction control
+- **Animation System**: Real-time path visualization with constant speed
 
-### How It Works
+### Key Algorithms
+- **Curve Discretization**: Adaptive point generation based on segment length
+- **Path Optimization**: Entity reordering for minimal travel distance
+- **Unit Conversion**: Automatic scaling based on DXF unit detection
+- **Animation Timing**: Constant speed calculation with distance-based timing
 
-1. **Virtual Entity IDs**: Special entity IDs (typically 100+) represent entry and exit paths in the cutting sequence
-2. **Horizontal Approach**: The wire approaches the foam with synchronized movement on both gantries
-3. **Same-rate Movement**: Both sides of the wire enter and exit at the same rate, ensuring clean cuts
-4. **Configurable Distance**: Set how far from the actual cutting profile the entry and exit moves should begin/end
+## Development Notes
 
-### Configuration Parameters
+This application uses modern Python practices:
+- Type hints and comprehensive error handling
+- Modular design with clear separation of concerns
+- Extensive use of constants for maintainability
+- Comprehensive documentation and user feedback
 
-The `entry_exit_config` dictionary allows you to configure:
+## License
 
-- `"type"`: Either "entry" or "exit" to specify the purpose
-- `"distance"`: A list [X, Z] specifying horizontal approach/exit distances (mm)
-- `"feed_rate"`: Optional custom feed rate for the entry/exit move
-- `"direction"`: Optional control over approach/exit angle
-
-### Example Configuration
-
-```
-entry_exit_config = {
-    101: {
-        "type": "entry",         # Marks this as an entry path
-        "distance": [50, 0],     # Horizontal approach: 50mm in X, 0mm in Z
-        "feed_rate": 150.0,      # Optional: slower feed rate for entry
-    },
-    102: {
-        "type": "exit",          # Marks this as an exit path
-        "distance": [-30, 0],    # Exit direction: -30mm in X, 0mm in Z
-    }
-}
-
-# Include these virtual entities in your cutting path
-left_plane_entities = [101, 5, 6, 7, 102]  # Entry → Profile → Exit
-right_plane_entities = [101, 8, 9, 10, 102]
-```
-
-## Key Functions
-
-### 2D Functionality
-- `read_cad_file(file_path)`: Import DXF files and extract entities
-- `entity_to_points(entity, scale=1.0)`: Convert DXF entities to point lists
-- `plot_entities(entities)`: Visualize all entities with type identification
-- `manual_order_path(entities, order)`: Create a cutting path with custom entity order
-- `animate_tool_path(points)`: Generate an interactive animation of the cutting process
-- `generate_gcode(points, feed_rate, wire_current)`: Create G-code for the cutting path
-
-### 3D Functionality
-- `load_step_file(filename)`: Load a STEP file and extract faces
-- `visualize_faces(faces, face_centers)`: Display faces with ID numbers
-- `extract_face_edges(face)`: Extract edges from a face with adaptive sampling
-- `visualize_entities_3d(entities)`: Create a 3D visualization of extracted entities
-- `generate_cutting_paths_from_entities()`: Create synchronized paths for dual-gantry cutting
-- `create_dual_gantry_animation()`: Animate the dual-gantry cutting process
-- `generate_dual_gantry_gcode()`: Generate G-code for 3D cutting with entry/exit paths
-
-## G-code Output
-
-The generated G-code includes:
-
-- Standard setup commands (G17, G21, G90, etc.)
-- Wire heating control (M3/M5)
-- 4-axis synchronized movement (X,Y for one end, A,Z for the other)
-- Feed rate and dwell time control
-- Smooth entry and exit movements for clean foam cutting
-
-Example:
-```
-G0 X0.000 Y10.000 A0.000 Z10.000; Rapid move to start position
-G1 X20.000 Y15.000 A20.000 Z15.000
-G1 X40.000 Y12.000 A40.000 Z12.000
-```
-
-## Performance Notes
-
-For large files or complex animations, you may experience performance issues. Some tips:
-
-- Reduce the number of points in arcs and splines by adjusting `points_per_arc`
-- Lower the `fps` parameter in animations for smoother playback
-- Use the optimized animation functions for large point sets
-- For 3D models, simplify complex faces by reducing the tessellation parameters
-
-## Contact
-
-Developed by Koji  
-Email: dbf@koji.space
-
-## Warning
-
-This was my vibe coding project. This software is provided as-is with no guarantees. Always verify the generated G-code before running it on your CNC machine.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+This software is provided as-is for educational and research purposes in the hot wire CNC cutting domain.
